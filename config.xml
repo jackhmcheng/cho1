@@ -4,7 +4,7 @@
         xmlns:android = "http://schemas.android.com/apk/res/android"
         id        = "com.chorev.hello"
         versionCode = "2"
-        version   = "0.0.2">
+        version   = "0.0.3">
     <name>Chorev Consulting</name>
 
     <description>

@@ -28,6 +28,13 @@
                     <a ng-repeat="handler in course._handlers | orderBy:'-priority'" ng-controller="handler.controller" ng-click="action($event, course)" class="tab-item active" title="{{title | translate}}">
                         <i class="icon {{icon}}"></i> {{title | translate}}
                     </a>
+                    
+                    <!-- *** Version 2.0: Private Chat: add icon and link under course-->
+                    <a class="tab-item active" title="contact_the_trainer" ng-click="contact_the_trainer({courseid: course.id}, {courseName: course.fullname})">
+                        <i class="icon ion-person"></i> Contact the Trainer
+                    </a>
+                    <!-- *** End -->
+
                 </div>
                 <div class="item text-center" ng-if="(!course._handlers || !course._handlers.length) && !areNavHandlersLoadedFor(course.id)">
                     <ion-spinner></ion-spinner>

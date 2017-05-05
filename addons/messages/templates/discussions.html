@@ -8,9 +8,16 @@
                     <img ng-src="{{disc.profileimageurl}}" alt="{{ 'mm.core.pictureof' | translate:{$a: disc.fullname} }}" role="presentation" mm-external-content ng-if="disc.profileimageurl">
                     <img src="img/user-avatar.png" alt="{{ 'mm.core.pictureof' | translate:{$a: disc.fullname} }}" role="presentation" ng-if="!disc.profileimageurl">
 
-                    <span class="item-note" ng-if="disc.message.timecreated > 0">{{disc.message.timecreated | mmDateDayOrTime}}</span>
+                    <!-- *** Version 2.0: Private Chat: [Workaround] somehow date formating is not working, make a new function for it -->
+                    <!--
+                    Original:
+                    <span class="item-note" ng-if="disc.message.timecreated > 0">{{disc.message.timecreated / 1000 | mmDateDayOrTime}}</span>
+                    -->
+                    <span class="item-note" ng-if="disc.message.timecreated > 0">{{ formatDateTime(disc.message.timecreated, 1) }} </span>
+                    <!-- *** End -->
+
                     <p class="item-heading">{{disc.fullname}}</p>
-                    <p><mm-format-text watch="true" clean="true" singleline="true">{{disc.message.message | mmaMessagesFormat}}</mm-format-text></p>
+                    <p><mm-format-text watch="true" clean="true" singleline="true">{{disc.message.message}}</mm-format-text></p>
                 </a>
             </li>
         </ul>

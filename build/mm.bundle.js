@@ -17,6 +17,12 @@ angular.module('mm', ['ionic', 'mm.core', 'mm.core.contentlinks', 'mm.core.cours
 	$ionicPlatform.ready(function() {
 		if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
 			window.cordova.plugins.Keyboard.hideKeyboardAccessoryBar(false);
+            
+            // *** Version 2.0: Private Chat: Try to fix the issue of white area in keyboard area
+            if (ionic.Platform.isIOS()){
+                window.cordova.plugins.Keyboard.disableScroll(true);
+            }
+            /// *** End ****
 		}
 		if (window.StatusBar) {
 			StatusBar.styleDefault();
@@ -1076,7 +1082,7 @@ angular.module('mm.core')
         var fileId,
             revision,
             promise;
-        $log.info('Now in FILEPOOL.JS...downloadUrl function' + $mmFS.isAvailable());
+        // $log.info('Now in FILEPOOL.JS...downloadUrl function' + $mmFS.isAvailable());
         if ($mmFS.isAvailable()) {
             //$log.info('Try try the function _fixPluginfileURL: ');
             //$log.info(self._fixPluginfileURL(siteId, fileUrl));
@@ -1177,11 +1183,11 @@ angular.module('mm.core')
         return id;
     };
         self._fixPluginfileURL = function(siteId, fileUrl) {
-        $log.info('Now in FILEPOOL.JS: _fixPluginfileURL function...');
+        // $log.info('Now in FILEPOOL.JS: _fixPluginfileURL function...');
         
 
         return $mmSitesManager.getSite(siteId).then(function(site) {
-             $log.info('Got site successful from mmSitesManager, calling fixPluginfileURL function in sitesfactory');
+             // $log.info('Got site successful from mmSitesManager, calling fixPluginfileURL function in sitesfactory');
               //return 'I am ok here in FILEPOOL: _fixPluginfileURL';
             return site.fixPluginfileURL(fileUrl);
         });
@@ -1946,8 +1952,8 @@ angular.module('mm.core')
         return deferred.promise;
     };
         self.isAvailable = function() {
-        $log.info('FS.JS isAvailable function Checking: window.webkitResolveLocalFileSystemURL - ' + window.resolveLocalFileSystemURL);
-        $log.info('FS.JS isAvailable function Checking: FileTransfer - ' + FileTransfer);
+        // $log.info('FS.JS isAvailable function Checking: window.webkitResolveLocalFileSystemURL - ' + window.resolveLocalFileSystemURL);
+        // $log.info('FS.JS isAvailable function Checking: FileTransfer - ' + FileTransfer);
         return typeof window.resolveLocalFileSystemURL !== 'undefined' && typeof FileTransfer !== 'undefined';
     };
         self.getFile = function(path) {
@@ -3214,6 +3220,7 @@ angular.module('mm.core')
             $log.debug('Invalidate cache for key: '+key);
             return db.whereEqual(mmCoreWSCacheStore, 'key', key).then(function(entries) {
                 if (entries && entries.length > 0) {
+                    //$log.info("Found cache with key, calling invalidateWSCacheEntries: " + JSON.stringify(entries));
                     return invalidateWsCacheEntries(db, entries);
                 }
             });
@@ -3231,7 +3238,7 @@ angular.module('mm.core')
             });
         };
                 Site.prototype.fixPluginfileURL = function(url) {
-            $log.info('Now in SITESFACTORY.JS: fixPluginfileURL function...calling fixPluginfileURL function in UTIL.JS with: ' + url +'; ' + this.token);
+            // $log.info('Now in SITESFACTORY.JS: fixPluginfileURL function...calling fixPluginfileURL function in UTIL.JS with: ' + url +'; ' + this.token);
             return $mmUtil.fixPluginfileURL(url, this.token);
         };
                 Site.prototype.deleteDB = function() {
@@ -4325,7 +4332,7 @@ angular.module('mm.core')
             return /^http(s)?\:\/\/.+/i.test(url);
         };
                 self.fixPluginfileURL = function(url, token) {
-            $log.info('Now in UTIL.JS: fixPluginfileURL function...');
+            // $log.info('Now in UTIL.JS: fixPluginfileURL function...');
             if (!url) {
                 return '';
             }
@@ -7773,8 +7780,8 @@ angular.module('mm.core')
 }]);
 
 angular.module('mm.core.courses')
-.controller('mmCoursesListCtrl', ["$scope", "$mmCourses", "$mmCoursesDelegate", "$mmUtil", "$mmEvents", "$mmSite", "mmCoursesEventMyCoursesUpdated", "mmCoursesEventMyCoursesRefreshed", function($scope, $mmCourses, $mmCoursesDelegate, $mmUtil, $mmEvents, $mmSite,
-            mmCoursesEventMyCoursesUpdated, mmCoursesEventMyCoursesRefreshed) {
+.controller('mmCoursesListCtrl', ["$scope", "$log", "$state", "$mmCourses", "$mmCoursesDelegate", "$mmUtil", "$mmEvents", "$mmSite", "mmCoursesEventMyCoursesUpdated", "mmCoursesEventMyCoursesRefreshed", "$mmaParticipants", function($scope, $log, $state, $mmCourses, $mmCoursesDelegate, $mmUtil, $mmEvents, $mmSite,
+            mmCoursesEventMyCoursesUpdated, mmCoursesEventMyCoursesRefreshed, $mmaParticipants) {
     $scope.searchEnabled = $mmCourses.isSearchCoursesAvailable();
     $scope.areNavHandlersLoadedFor = $mmCoursesDelegate.areNavHandlersLoadedFor;
     $scope.filter = {};
@@ -7804,9 +7811,68 @@ angular.module('mm.core.courses')
             });
         });
     };
+
+    // *** Version 2.0: Private Chat: function to identify trainer (Teacher) and navigate to Chat 
+    
+    $scope.contact_the_trainer = function(courseid, courseName){
+        // 1. identify the trainer
+        $log.info("Going to get trainer from user list for course: "+courseid.courseid);
+
+        // 1.1 retrieve all enroled users
+        // $mmaParticipants.getParticipants("3"); // hardcoded now for dev, must be Updated!!! refer to participant list for how to get
+        var wsName,
+            data = {
+                courseid: courseid.courseid
+            }, 
+            preSets = {
+                cacheKey: "userListForContactTrainer:"+courseid.courseid
+            },
+            trainerUserId;  // the trainer we are looking for
+
+        if ($mmSite.wsAvailable('core_enrol_get_enrolled_users')) {
+            wsName = 'core_enrol_get_enrolled_users';
+        } else {
+            $log.error("Required WS core_enrol_get_enrolled_users not available");
+        }
+
+        //1.2 go through each user, save to var "trainerUserId" if the roles contains Teacher
+        $mmSite.read(wsName, data, preSets).then(function(users){
+            angular.forEach(users, function(user) {
+                // examine each user
+                
+                angular.forEach(user.roles, function(role){
+                    // look into each role of users
+                    //$log.info(JSON.stringify(role));
+                    $log.info("Processing User: " + user.id + ", with role: " + role.shortname);
+
+                    if (role.shortname.includes("teacher")){ // contains "teacher" instead of exact match (may be "editingteacher")
+                        //if this user is a teacher, save it
+                        trainerUserId = parseInt(user.id);
+                        $log.info("Trainer found is: " + trainerUserId);
+                    }
+                });
+            });
+
+        // 2. call chat with the trainer
+            $state.go('site.messages-discussion',{
+                userId: trainerUserId,
+                courseName: courseName.courseName 
+            });
+
+        }); 
+
+        
+        
+
+        // ref the "message" button in profile page
+    };
+    
+    // *** End 
+
     $mmEvents.on(mmCoursesEventMyCoursesUpdated, function(siteid) {
         if (siteid == $mmSite.getId()) {
-            fetchCourses();
+            fetchCourses(); 
+
         }
     });
 }]);
@@ -9948,10 +10014,33 @@ angular.module('mm.addons.messages', ['mm.core'])
             }
         }
     })
+    
+    /*
+    // *** Version 2.0: Private Message: new state for Private Chat to link from Courses List
+    .state('site.private-chat', {
+        url: '/private-chat',
+        params: {
+            userId: null,
+            courseName: null
+        },
+        views: {
+            'site': {
+                templateUrl: 'addons/messages/templates/discussion.html',
+                controller: 'mmaMessagesDiscussionCtrl'
+            }
+        }
+    })
+    // *** End
+    */
+
     .state('site.messages-discussion', {
         url: '/messages-discussion',
         params: {
-            userId: null
+            userId: null,
+
+            // *** Version 2.0: Private Message: for adding course in message prefix
+            courseName: null
+            // *** End
         },
         views: {
             'site': {
@@ -12262,10 +12351,22 @@ angular.module('mm.addons.messages')
         fetching,
         backView = $ionicHistory.backView(),
         lastMessage,
-        scrollView = $ionicScrollDelegate.$getByHandle('mmaMessagesScroll');
+        scrollView = $ionicScrollDelegate.$getByHandle('mmaMessagesScroll'),
+        
+    // *** Version 2.0: Private Message: course name for adding to chat prefix
+        courseName = $stateParams.courseName;
+    // *** End 
+
+
+
+    
+
     $scope.loaded = false;
     $scope.messages = [];
     $scope.userId = userId;
+
+
+
     $scope.currentUserId = $mmSite.getUserId();
     if (backView && backView.stateName === mmUserProfileState) {
         $scope.profileLink = false;
@@ -12282,6 +12383,9 @@ angular.module('mm.addons.messages')
             $scope.profileLink = true;
         });
     }
+
+    
+
     $scope.isAppOffline = function() {
         return !$mmApp.isOnline();
     };
@@ -12298,6 +12402,13 @@ angular.module('mm.addons.messages')
         } else if (!text.trim()) {
             return;
         }
+
+        // *** Version 2.0 Private Chat
+        if (courseName) {
+            text = "[" + courseName + "] " + text;
+        }
+        // *** End
+
         text = text.replace(/(?:\r\n|\r|\n)/g, '<br />');
         message = {
             sending: true,
@@ -12305,11 +12416,17 @@ angular.module('mm.addons.messages')
             smallmessage: text,
             timecreated: ((new Date()).getTime() / 1000)
         };
+
+        // $log.info("Message to be sent, the DATE is: " + message.timecreated);
+
         $scope.messages.push(message);
         messagesBeingSent++;
         $mmaMessages.sendMessage(userId, text).then(function() {
             message.sending = false;
+            // $log.info("Message sent successfully, msg hist: " + JSON.stringify($scope.messages));
             notifyNewMessage();
+            // $log.info("*** Message hist after notifyNewMessage: " + JSON.stringify($scope.messages));
+            
         }, function(error) {
             $mmApp.closeKeyboard();
             if (typeof error === 'string') {
@@ -12321,8 +12438,15 @@ angular.module('mm.addons.messages')
         }).finally(function() {
             messagesBeingSent--;
         });
+        
+        // *** Version 2.0: Private Message: Fix the issue of textbox not cleared after submit
+        $scope.newMessage = "";
+        // *** End
     };
     $mmaMessages.getDiscussion(userId).then(function(messages) {
+        
+        // $log.info("Refresh Discussion after sending: " + JSON.stringify(messages));
+        
         $scope.messages = $mmaMessages.sortMessages(messages);
         if (!$scope.title && messages && messages.length > 0) {
             if (messages[0].useridto != $scope.currentUserId) {
@@ -12383,17 +12507,65 @@ angular.module('mm.addons.messages')
             polling = undefined;
         }
     }
+
+
+    // ** Version 2.0: Private Chat: [Workaround] somehow date formating is not working, make a new function for it
+    // format = 1, show header format
+    // format = 2, show message format
+    $scope.formatDateTime = function(datetime, format){
+        $log.info("Going to format Datetime: " + datetime + ", in format: " + format);
+        var a = new Date(datetime * 1000);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var year = a.getFullYear();
+        var month = months[a.getMonth()];
+        var date = a.getDate();
+        var hour = a.getHours();
+        var min = a.getMinutes();
+        var sec = a.getSeconds();
+
+        // header date format
+        if (format == 1){
+            return date + " " + month;
+        }
+
+        // message time format
+        if (format == 2){
+            return hour + ":" + min;
+
+        }
+    }
+
+    // *** End
+
+    // *** Version 2.0: Private Chat: [Workaround] some how the message controller cannot detect "viewContentLoaded", so add a [class="pollingOnMsgLoadComplete()"] to add the repeating polling after successful of initial load of messages 
+    $scope.pollingOnMsgLoadComplete = function(loadComplete){
+        if (loadComplete) {
+            $log.info("Now set Polling job");
+            setPolling();
+        }
+    }
+    // *** End ***
+
     if ($ionicPlatform.isTablet()) {
+        $log.info("Polling going to be setted / unsetted, is Tablet");
+        /* *** Version 2.0: Private Chat: [Workaround] some how the message controller cannot detect "viewContentLoaded", removed this and use workaround above
         $scope.$on('$viewContentLoaded', function(){
+            $log.info("Polling going to be setted, is Tablet");
             setPolling();
         });
+        */
         $scope.$on('$destroy', function(){
+            $log.info("Polling going to be UNsetted, is Tablet");
             unsetPolling();
         });
     } else {
+        $log.info("Polling going to be setted / unsetted, NOT Tablet");
+        /*  *** Version 2.0: Private Chat: [Workaround] some how the message controller cannot detect "viewContentLoaded", removed this and use workaround above
         $scope.$on('$ionicView.enter', function() {
+            $log.info("Polling going to be setted, NOT Tablet");
             setPolling();
         });
+        */
         $scope.$on('$ionicView.leave', function(e) {
             unsetPolling();
         });
@@ -12402,6 +12574,9 @@ angular.module('mm.addons.messages')
         var last = $scope.messages[$scope.messages.length - 1];
         if (last && last.smallmessage !== lastMessage) {
             lastMessage = last.smallmessage;
+            
+            $log.info("Last Message : " + lastMessage + "; date time: " + last.timecreated);
+
             $mmEvents.trigger(mmaMessagesNewMessageEvent, {
                 siteid: $mmSite.getId(),
                 userid: userId,
@@ -12509,6 +12684,27 @@ angular.module('mm.addons.messages')
             $scope.$broadcast('scroll.refreshComplete');
         });
     };
+
+    // ** Version 2.0: Private Chat: [Workaround] somehow date formating is not working, make a new function for it
+    // format = 1, show date format
+    $scope.formatDateTime = function(datetime, format){
+        //$log.info("Going to format Datetime: " + datetime + ", in format: " + format);
+        var a = new Date(datetime * 1000);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var year = a.getFullYear();
+        var month = months[a.getMonth()];
+        var date = a.getDate();
+        var hour = a.getHours();
+        var min = a.getMinutes();
+        var sec = a.getSeconds();
+
+        // date format
+        if (format == 1){
+            return date + "/" + month + "/" + year;
+        }
+
+
+    }
     fetchDiscussions().finally(function() {
         $scope.loaded = true;
         $rootScope.$broadcast(mmCoreSplitViewLoad);

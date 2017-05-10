@@ -12523,6 +12523,17 @@ angular.module('mm.addons.messages')
         var min = a.getMinutes();
         var sec = a.getSeconds();
 
+        // add preceding zero to time values if needed
+        if (hour < 10) {
+            hour = "0" + hour;
+        }
+        if (min < 10){
+            min = "0" + min;
+        }
+        if (sec < 10) {
+            sec = "0" + sec;
+        }
+
         // header date format
         if (format == 1){
             return date + " " + month;
@@ -12697,6 +12708,17 @@ angular.module('mm.addons.messages')
         var hour = a.getHours();
         var min = a.getMinutes();
         var sec = a.getSeconds();
+
+        // add preceding zero to time values if needed
+        if (hour < 10) {
+            hour = "0" + hour;
+        }
+        if (min < 10){
+            min = "0" + min;
+        }
+        if (sec < 10) {
+            sec = "0" + sec;
+        }
 
         // date format
         if (format == 1){

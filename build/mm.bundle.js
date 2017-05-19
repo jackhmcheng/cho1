@@ -23148,7 +23148,7 @@ angular.module('mm.addons.remotestyles')
 angular.module('mm.core')
 
 .constant('mmCoreConfigConstants', {
-    "app_id" : "com.moodle.moodlemobile",
+    "app_id" : "com.chorev.hello",
     "versioncode" : "2011",
     "versionname" : "3.0.0",
     "cache_expiration_time" : 300000,
@@ -23157,7 +23157,7 @@ angular.module('mm.core')
     "wsservice" : "moodle_mobile_app",
     "wsextservice" : "local_mobile",
     "demo_sites": {"student": {"url": "http://school.demo.moodle.net", "username": "student", "password": "moodle"}, "teacher": {"url": "http://school.demo.moodle.net", "username": "teacher", "password": "moodle"}, "cva": {"url": "http://mm.cvaconsulting.com/moodle", "username": "student", "password": "student"}},
-    "gcmpn": "694767596569",
+    "gcmpn": "580262980937",
     "customurlscheme": "moodlemobile"
 }
 );

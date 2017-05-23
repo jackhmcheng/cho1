@@ -10065,7 +10065,12 @@ angular.module('mm.addons.messages', ['mm.core'])
             if ($mmUtil.isFalseOrZero(notification.notif)) {
                 $mmaMessages.isMessagingEnabledForSite(notification.site).then(function() {
                     $mmaMessages.invalidateDiscussionsCache().finally(function() {
-                        $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
+                  
+			// *** Version 2.0.2: Push Notification: Try to resolve issue of blank page on clicking of notification
+                        // Original: $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
+                        $state.go('site.messages');
+                        // *** End ***
+			    
                     });
                 });
                 return true;
@@ -10169,7 +10174,22 @@ angular.module('mm.addons.mod_chat', [])
 .config(["$mmCourseDelegateProvider", "$mmContentLinksDelegateProvider", function($mmCourseDelegateProvider, $mmContentLinksDelegateProvider) {
     $mmCourseDelegateProvider.registerContentHandler('mmaModChat', 'chat', '$mmaModChatHandlers.courseContent');
     $mmContentLinksDelegateProvider.registerLinkHandler('mmaModChat', '$mmaModChatHandlers.linksHandler');
+}])
+
+// *** Version 2.0.2: Push Notification: added handling of clicking of push notification for forum update
+.run(["$mmaModForum", "$state", "$mmAddonManager", "$mmUtil", "mmCoreEventLogin", function($mmaModForum, $state, $mmAddonManager, $mmUtil, mmCoreEventLogin) {
+    var $mmPushNotificationsDelegate = $mmAddonManager.get('$mmPushNotificationsDelegate');
+    if ($mmPushNotificationsDelegate) {
+        $mmPushNotificationsDelegate.registerHandler('mmaModForum', function(notification) {
+            if ($mmUtil.isTrueOrOne(notification.notif)) {
+                $state.go('site.notifications'); // go to page Notification when clicked
+                return true;
+            }
+        });
+    }
 }]);
+// *** End ***
+
 angular.module('mm.addons.mod_choice', [])
 .constant('mmaModChoiceResultsNot', 0)
 .constant('mmaModChoiceResultsAfterAnswer', 1)

@@ -10065,7 +10065,10 @@ angular.module('mm.addons.messages', ['mm.core'])
             if ($mmUtil.isFalseOrZero(notification.notif)) {
                 $mmaMessages.isMessagingEnabledForSite(notification.site).then(function() {
                     $mmaMessages.invalidateDiscussionsCache().finally(function() {
-                        $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
+			// *** Version 2.0.2: Push Notification: Try to resolve issue of blank page on clicking of notification
+                        // Original: $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
+                        $state.go('site.messages');
+			// *** End
                     });
                 });
                 return true;
@@ -10108,7 +10111,20 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
 .config(["$mmCourseDelegateProvider", "$mmContentLinksDelegateProvider", function($mmCourseDelegateProvider, $mmContentLinksDelegateProvider) {
     $mmCourseDelegateProvider.registerContentHandler('mmaModAssign', 'assign', '$mmaModAssignHandlers.courseContent');
     $mmContentLinksDelegateProvider.registerLinkHandler('mmaModAssign', '$mmaModAssignHandlers.linksHandler');
+}])
+// *** Version 2.0.2: Push Notification: added handling of clicking of push notification for forum update
+.run(["$mmaModForum", "$state", "$mmAddonManager", "$mmUtil", "mmCoreEventLogin", function($mmaModForum, $state, $mmAddonManager, $mmUtil, mmCoreEventLogin) {
+    var $mmPushNotificationsDelegate = $mmAddonManager.get('$mmPushNotificationsDelegate');
+    if ($mmPushNotificationsDelegate) {
+        $mmPushNotificationsDelegate.registerHandler('mmaModForum', function(notification) {
+            if ($mmUtil.isTrueOrOne(notification.notif)) {
+                $state.go('site.notifications'); // go to page "Notification" when clicked
+                return true;
+            }
+        });
+    }
 }]);
+// *** End ***
 
 angular.module('mm.addons.mod_book', ['mm.core'])
 .constant('mmaModBookComponent', 'mmaModBook')
@@ -23148,7 +23164,7 @@ angular.module('mm.addons.remotestyles')
 angular.module('mm.core')
 
 .constant('mmCoreConfigConstants', {
-    "app_id" : "com.moodle.moodlemobile",
+    "app_id" : "com.chorev.hello",
     "versioncode" : "2011",
     "versionname" : "3.0.0",
     "cache_expiration_time" : 300000,
@@ -23157,7 +23173,7 @@ angular.module('mm.core')
     "wsservice" : "moodle_mobile_app",
     "wsextservice" : "local_mobile",
     "demo_sites": {"student": {"url": "http://school.demo.moodle.net", "username": "student", "password": "moodle"}, "teacher": {"url": "http://school.demo.moodle.net", "username": "teacher", "password": "moodle"}, "cva": {"url": "http://mm.cvaconsulting.com/moodle", "username": "student", "password": "student"}},
-    "gcmpn": "694767596569",
+    "gcmpn": "580262980937",
     "customurlscheme": "moodlemobile"
 }
 );

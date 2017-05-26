@@ -10067,7 +10067,9 @@ angular.module('mm.addons.messages', ['mm.core'])
                     $mmaMessages.invalidateDiscussionsCache().finally(function() {
 			// *** Version 2.0.2: Push Notification: Try to resolve issue of blank page on clicking of notification
                         // Original: $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
-                        $state.go('site.messages');
+                        // Modified: $state.go('site.messages');
+			// 26May2017: try changing back to original and see if issue in iOS can be resolved
+			$state.go('redirect', {siteid: notification.site, state: 'site.messages'});
 			// *** End
                     });
                 });
@@ -10118,7 +10120,9 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
     if ($mmPushNotificationsDelegate) {
         $mmPushNotificationsDelegate.registerHandler('mmaModForum', function(notification) {
             if ($mmUtil.isTrueOrOne(notification.notif)) {
-                $state.go('site.notifications'); // go to page "Notification" when clicked
+                // 26May2017: try changing back to original method and see if issue in iOS can be resolved
+		// 2.0.2 method: $state.go('site.notifications'); // go to page "Notification" when clicked
+		$state.go('redirect', {siteid: notification.site, state: 'site.notifications'});
                 return true;
             }
         });

@@ -10056,7 +10056,7 @@ angular.module('mm.addons.messages', ['mm.core'])
     $mmUserDelegateProvider.registerProfileHandler('mmaMessages:blockContact', '$mmaMessagesHandlers.blockContact', mmaMessagesBlockContactPriority);
     $mmContentLinksDelegateProvider.registerLinkHandler('mmaMessages', '$mmaMessagesHandlers.linksHandler');
 }])
-.run(["$mmaMessages", "$mmEvents", "$state", "$mmAddonManager", "$mmUtil", "mmCoreEventLogin", function($mmaMessages, $mmEvents, $state, $mmAddonManager, $mmUtil, mmCoreEventLogin) {
+.run(["$mmaMessages", "$mmEvents", "$state", "$location", "$mmAddonManager", "$mmUtil", "mmCoreEventLogin", function($mmaMessages, $mmEvents, $state, $location, $mmAddonManager, $mmUtil, mmCoreEventLogin) {
     $mmEvents.on(mmCoreEventLogin, function() {
         $mmaMessages.invalidateEnabledCache();
     });
@@ -10070,7 +10070,8 @@ angular.module('mm.addons.messages', ['mm.core'])
                         // Original: $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
                         // Modified: $state.go('site.messages');
 			// 26May2017: try changing back to original and see if issue in iOS can be resolved
-			$state.go('redirect', {siteid: notification.site, state: 'site.messages'});
+			// 30May2017: try $location.path redirect, original: $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
+			$location.path('/messages');
 			// *** End
                     });
                 });

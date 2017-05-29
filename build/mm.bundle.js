@@ -10006,7 +10006,8 @@ angular.module('mm.addons.messages', ['mm.core'])
             mmaMessagesAddContactPriority, mmaMessagesBlockContactPriority, mmaMessagesPriority, $mmContentLinksDelegateProvider) {
     $stateProvider
     .state('site.messages', {
-        url: '/messages',
+        cache: false,
+	url: '/messages',
         views: {
             'site': {
                 templateUrl: 'addons/messages/templates/index.html',

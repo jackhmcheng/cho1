@@ -10071,7 +10071,9 @@ angular.module('mm.addons.messages', ['mm.core'])
                         // Modified: $state.go('site.messages');
 			// 26May2017: try changing back to original and see if issue in iOS can be resolved
 			// 30May2017: try $location.path redirect, original: $state.go('redirect', {siteid: notification.site, state: 'site.messages'});
-			$location.path('/messages');
+			// $location.path('/messages');
+			// Version 2.0.7: finally found it is plugin issue, so changing back to modified one - $state.go('site.messages');
+			$state.go('site.messages');
 			// *** End
                     });
                 });
@@ -10124,7 +10126,9 @@ angular.module('mm.addons.mod_assign', ['mm.core'])
             if ($mmUtil.isTrueOrOne(notification.notif)) {
                 // 26May2017: try changing back to original method and see if issue in iOS can be resolved
 		// 2.0.2 method: $state.go('site.notifications'); // go to page "Notification" when clicked
-		$state.go('redirect', {siteid: notification.site, state: 'site.notifications'});
+		// $state.go('redirect', {siteid: notification.site, state: 'site.notifications'});
+		// Version 2.0.7: finally found it is plugin issue, so changing back to modified one - $state.go('site.notifications');
+		$state.go('site.notifications');
                 return true;
             }
         });

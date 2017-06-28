@@ -6016,6 +6016,11 @@ angular.module('mm.core.courses', [])
 .config(["$stateProvider", function($stateProvider) {
     $stateProvider
     .state('site.mm_courses', {
+	    
+   	// **** version 2.0.8 try fix reload of search result after enrol
+        cache: false,
+        // *** End ***
+	    
         url: '/mm_courses',
         views: {
             'site': {
@@ -6034,7 +6039,12 @@ angular.module('mm.core.courses', [])
         }
     })
     .state('site.mm_viewresult', {
-        url: '/mm_viewresult',
+        
+    	// **** version 2.0.8 try fix reload of search result after enrol
+        cache: false,
+        // *** End ***
+	    
+	url: '/mm_viewresult',
         params: {
             course: null
         },

@@ -4,9 +4,21 @@
         <ion-refresher pulling-text="{{ 'mm.core.pulltorefresh' | translate }}" on-refresh="doRefresh()" ng-if="courseLoaded"></ion-refresher>
         <mm-loading hide-until="courseLoaded">
             <div ng-if="course" class="list card">
+                
+                <!-- *** Version 2.0.8: NICE TO HAVE: show if a course is enrolled -->
+                <!-- Original
                 <div class="item item-divider">
                     <h2><mm-format-text watch="true">{{course.fullname}}</mm-format-text></h2>
                 </div>
+                -->
+                <div class="item item-divider" ng-if="!isEnrolled">
+                    <h2><mm-format-text watch="true">{{course.fullname}}</mm-format-text></h2>
+                </div>
+                <div class="item item-divider" ng-if="isEnrolled">
+                    <h2><mm-format-text watch="true">{{course.fullname}}  [<b>Enrolled</b>]</mm-format-text></h2>
+                </div>
+                <!-- *** End *** -->
+                
                 <div class="item" ng-if="course.categoryname">
                     <p class="item-heading">{{ 'mm.core.category' | translate }}</p>
                     <p><mm-format-text watch="true">{{course.categoryname}}</mm-format-text></p>
@@ -24,7 +36,11 @@
                 </div>
                 <mm-file ng-repeat="file in course.overviewfiles" file="file" component="{{component}}" component-id="{{course.id}}"></mm-file>
                 <div class="item" ng-if="!isEnrolled" ng-repeat="instance in selfEnrolInstances track by instance.id">
-                    <p class="item-heading">{{ instance.name }}</p>
+                    
+                    <!-- *** Version 2.0.8: Fix issue: "admin" above "Enrol me"-->
+                    <!-- Removed: <p class="item-heading">{{ instance.name }}</p>-->
+                    <!-- *** End *** -->
+                    
                     <button class="button button-block" ng-click="enrol(instance.id, enroldata.password)">{{ 'mm.courses.enrolme' | translate }}</button>
                 </div>
                 <div class="item" ng-if="!isEnrolled && !selfEnrolInstances.length">

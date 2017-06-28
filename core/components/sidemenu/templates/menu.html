@@ -20,8 +20,16 @@
             <div class="bar bar-header bar-side-menu">
                 <div class="item item-avatar">
                     <img ng-src="{{siteinfo.userpictureurl}}" alt="{{ 'mm.core.pictureof' | translate:{$a: siteinfo.fullname} }}" role="presentation" mm-external-content>
+                                        
+                    <!-- *** Version 2.0.8: Fixing regarding suggestion: reverse order of company name (app name) and user name in side menu-->
+                    <p> Chorev Consulting App</p>
                     <h2>{{siteinfo.fullname}}</h2>
-                    <p><mm-format-text watch="true">{{siteinfo.sitename}}</mm-format-text></p>
+                    <!--Original:
+                        <h2>{{siteinfo.fullname}}</h2>
+                        <p><mm-format-text watch="true">{{siteinfo.sitename}}</mm-format-text></p>
+                    -->
+                    <!-- *** End -->
+                    
                 </div>
             </div>
         </header>

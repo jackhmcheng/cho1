@@ -38,7 +38,10 @@
                             Original: <mm-format-text after-render="scrollAfterRender" watch="true">{{ message.text }}</mm-format-text>
                             -->
 
-                            <mm-format-text after-render="scrollAfterRender" watch="true"> {{ message.smallmessage }} </mm-format-text>
+                            <!-- *** Version 2.0.9: Add mask to make hyperlink in message clickable -->
+                            <!-- Original: <mm-format-text after-render="scrollAfterRender" watch="true"> {{ message.smallmessage }} </mm-format-text>-->
+                            <mm-format-text after-render="scrollAfterRender" watch="true"> {{ processMsgDisplay(message.smallmessage) }} </mm-format-text>
+                            <!-- *** End -->
                             
                             <!-- *** End -->
 

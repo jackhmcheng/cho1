@@ -9832,6 +9832,9 @@ angular.module('mm.addons.calendar', [])
 .config(["$stateProvider", "$mmSideMenuDelegateProvider", "mmaCalendarPriority", function($stateProvider, $mmSideMenuDelegateProvider, mmaCalendarPriority) {
     $stateProvider
         .state('site.calendar', {
+    	    // *** version 2.0.9: fix calendar event not refresh unless manual refresh
+            cache: false,
+            // **** ****
             url: '/calendar',
             views: {
                 'site': {
@@ -9845,6 +9848,9 @@ angular.module('mm.addons.calendar', [])
             }
         })
         .state('site.calendar-event', {
+	    // *** version 2.0.9: fix calendar event not refresh unless manual refresh
+            cache: false,
+            // **** ****
             url: '/calendar-event/:id',
             views: {
                 'site': {
@@ -9859,7 +9865,11 @@ angular.module('mm.addons.calendar', [])
     $mmLocalNotifications.registerClick(mmaCalendarComponent, function(data) {
         if (data.eventid) {
             $mmApp.ready().then(function() {
+                /*** version 2.0.9: fixing white screen when clicking on calendar event push notification
                 $state.go('redirect', {siteid: data.siteid, state: 'site.calendar', params: {eventid: data.eventid}});
+                */
+                $state.go('site.calendar');
+                // *********
             });
         }
     });
@@ -12537,7 +12547,21 @@ angular.module('mm.addons.messages')
             polling = undefined;
         }
     }
-
+	
+    // *** version 2.0.9: Add mask to 
+    //      1) replace new lines in string with html br for display; and 
+    //      2) make hyperlink in message clickable
+    var urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    $scope.processMsgDisplay = function (text) {
+        // first replace new lines with html <br />
+        text = text.replace(/\r?\n/g, "<br />");
+        // last format hyperlinks
+        return text.replace(urlRegex, function(url) {
+            //console.log("v2.0.9: url found: "+url);
+            return '<a href="' + url + '">' + url + '</a>';
+        });
+    }
+    // ****************************
 
     // ** Version 2.0: Private Chat: [Workaround] somehow date formating is not working, make a new function for it
     // format = 1, show header format
